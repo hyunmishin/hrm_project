@@ -1,4 +1,4 @@
-package com.spring.hrm_project.comon.config;
+package com.spring.hrm_project.common.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
