@@ -5,9 +5,13 @@ import com.spring.hrm_project.common.config.domain.entity.User;
 import com.spring.hrm_project.service.UserService;
 import com.spring.hrm_project.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/jwt-login")
@@ -30,15 +34,18 @@ public class LoginController {
 
         String jwtToken = JwtTokenUtil.createToken(user.getLoginId(), secretKey, expireTimeMs);
 
+        // 토큰 생성 후 access_token 을 usr_token에 login_id와 토큰을 저장함
+
         return jwtToken;
     }
 
     @GetMapping("/info")
-    public String userInfo(Authentication authentication) {
+    public ResponseEntity<String> userInfo() {
 
-        User loginUser = userService.getLoginUserByLoginId(authentication.getName());
+        User loginUser = userService.getLoginUserByLoginId(SecurityContextHolder.getContext().getAuthentication().getName());
 
-        return String.format("loginId : %s\nnickname : %s\nrole : %s",
-                loginUser.getLoginId(), loginUser.getNickname(), loginUser.getUserRole().name());
+        return new ResponseEntity<>(String.format("loginId : %s\nnickname : %s\nrole : %s",
+                loginUser.getLoginId(), loginUser.getNickname(), loginUser.getUserRole()), HttpStatus.OK);
+
     }
 }
