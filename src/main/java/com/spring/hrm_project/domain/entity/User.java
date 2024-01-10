@@ -1,4 +1,4 @@
-package com.spring.hrm_project.common.config.domain.entity;
+package com.spring.hrm_project.domain.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,6 +23,8 @@ public class User {
     private String nickname;
 
     private String userRole;
+
+    private String accessToken;
 
     // OAuth 로그인에 사용
 //    private String provider;

@@ -1,4 +1,4 @@
-package com.spring.hrm_project.common.config.domain.dto;
+package com.spring.hrm_project.domain.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

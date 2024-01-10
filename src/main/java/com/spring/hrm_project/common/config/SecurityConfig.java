@@ -1,5 +1,7 @@
 package com.spring.hrm_project.common.config;
 
+import com.spring.hrm_project.domain.UserRole;
+import com.spring.hrm_project.jwt.JwtAccessDeniedHandler;
 import com.spring.hrm_project.jwt.JwtAuthenticationEntryPoint;
 import com.spring.hrm_project.jwt.JwtTokenFilter;
 import com.spring.hrm_project.service.UserService;
@@ -37,7 +39,8 @@ public class SecurityConfig {
     //JWT 토큰을 사용하여 인증하는 기능을 구현, 특정 경로에 대한 접근 제어를 설정하는 역할
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity
-            , JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint) throws Exception{
+            , JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint
+            , JwtAccessDeniedHandler jwtAccessDeniedHandler) throws Exception{
         httpSecurity
                 .formLogin(FormLoginConfigurer::disable)
                 .httpBasic(HttpBasicConfigurer::disable) //HTTP 기본 인증을 비활성화
@@ -46,10 +49,12 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize ->
                         authorize
                                 .requestMatchers("/jwt-login/info").authenticated()
-                                .requestMatchers("/jwt-login/login").permitAll())
+                                .requestMatchers("/jwt-login/login").permitAll()
+                                .requestMatchers("/jwt-login/admin/**").hasAuthority(UserRole.ADMIN.name()))
                 .addFilterBefore(new JwtTokenFilter(userService, secretKey), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(authenticationManager -> authenticationManager
-                        .authenticationEntryPoint(jwtAuthenticationEntryPoint));
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(jwtAccessDeniedHandler));
 
                 return httpSecurity.build();
     }

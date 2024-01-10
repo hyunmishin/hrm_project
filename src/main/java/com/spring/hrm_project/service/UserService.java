@@ -1,8 +1,9 @@
 package com.spring.hrm_project.service;
 
-import com.spring.hrm_project.common.config.domain.dto.LoginRequest;
-import com.spring.hrm_project.common.config.domain.entity.User;
+import com.spring.hrm_project.domain.dto.LoginRequest;
+import com.spring.hrm_project.domain.entity.User;
 import com.spring.hrm_project.repository.UserRepository;
+import com.spring.hrm_project.utils.JwtTokenUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,8 +17,6 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    //final BCryptPasswordEncoder encoder;
-
     /**
      * 로그인 기능
      * 화면에서 LoginRequest(loginId, password)를 입력받아 loginId와 password가 일치하면 User return
@@ -26,39 +25,36 @@ public class UserService {
     public User login(LoginRequest loginRequest) {
         Optional<User> optionalUser = userRepository.findByLoginId(loginRequest.getLoginId());
 
-        // loginId와 일치하는 유저가 없으면 null return
+        // 로그인아이디와 일치하는 유저가 없으면 널값 리턴
         if(optionalUser.isEmpty()) {
             return null;
         }
 
         User user = optionalUser.get();
 
-        // 찾아온 유저의 password와 입력된 password가 다르면 null return
+        // 찾아온 유저의 패스워드와 입력된 패스워드가 다르면 널값 리턴
         if(!user.getPassword().equals(loginRequest.getPassword())) {
             return null;
         }
 
+        // 로그인 성공 => Jwt Token 발급
+        String secretKey = "my-secret-key-123123";
+        long expireTimeMs = 1000 * 60 * 60;     // Token 유효 시간 = 60분
+
+        String jwtToken = JwtTokenUtil.createToken(user.getLoginId(), secretKey, expireTimeMs);
+
+        user = User.builder()
+                .accessToken(jwtToken)
+                .loginId(user.getLoginId())
+                .password(user.getPassword())
+                .nickname(user.getNickname())
+                .userRole(user.getUserRole())
+                .id(user.getId())
+                .build();
+        userRepository.save(user);
+
         return user;
     }
-
-    /**
-     * userId(Long)를 입력받아 User을 return 해주는 기능
-     * 인증, 인가 시 사용
-     * userId가 null이거나(로그인 X) userId로 찾아온 User가 없으면 null return
-     * userId로 찾아온 User가 존재하면 User return
-     */
-//    public User getLoginUserById(Long userId) {
-//        if(userId == null) {
-//            return null;
-//        }
-//
-//        Optional<User> optionalUser = userRepository.findById(userId);
-//        if(optionalUser.isEmpty()) {
-//            return null;
-//        }
-//
-//        return optionalUser.get();
-//    }
 
     /**
      * loginId(String)를 입력받아 User을 return 해주는 기능
@@ -69,29 +65,19 @@ public class UserService {
     public User getLoginUserByLoginId(String loginId) {
         if(loginId == null) return null;
 
-
         Optional<User> optionalUser = userRepository.findByLoginId(loginId);
         if(optionalUser.isEmpty()) return null;
 
         return optionalUser.get();
     }
 
-//    /**
-//     * loginId 중복 체크
-//     * 회원가입 기능 구현 시 사용
-//     * 중복되면 true return
-//     */
-//    public boolean checkLoginIdDuplicate(String loginId) {
-//        return userRepository.existByLoginId(loginId);
-//    }
-//
-//    /**
-//     * nickname 중복 체크
-//     * 회원가입 기능 구현 시 사용
-//     * 중복되면 true return
-//     */
-//    public boolean checkNicknameDuplicate(String nickname) {
-//        return userRepository.existByNickname(nickname);
-//    }
+
+    /**
+     * 로그아웃 기능
+     */
+    public void logout() {
+        // 로그인한 사용자 정보 가져와서 토큰 삭제 후 로그아웃 처리
+        
+    }
 
 }

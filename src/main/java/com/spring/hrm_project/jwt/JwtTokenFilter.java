@@ -1,11 +1,10 @@
 package com.spring.hrm_project.jwt;
 
-import com.spring.hrm_project.common.config.domain.entity.User;
+import com.spring.hrm_project.domain.entity.User;
 import com.spring.hrm_project.service.UserService;
 import com.spring.hrm_project.utils.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +17,6 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -36,33 +34,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         log.info("필터작동");
         // Header의 Authorization 값이 비어있으면 => JWT 토큰을 전송 X
         if(authorizationHeader == null) {
-            log.info("첫번째");
-            // 화면 로그인 시 쿠키의 "jwtToken"으로 JWT 토큰을 전송
-            // 쿠키에도 JWT Token이 없다면 로그인 하지 않은 것으로 간주
-            if(httpServletRequest.getCookies() == null) {
-                log.info("두번째");
-                filterChain.doFilter(httpServletRequest, httpServletResponse);
-                return;
-            }
-
-            // 쿠키에서 "jwtToken"을 Key로 가진 쿠키를 찾아서 가져오고 없으면 null return
-            Cookie jwtTokenCookie = Arrays.stream(httpServletRequest.getCookies())
-                    .filter(cookie -> cookie.getName().equals("jwtToken"))
-                    .findFirst()
-                    .orElse(null);
-
-            if(jwtTokenCookie == null) {
-                log.info("세번째");
-                filterChain.doFilter(httpServletRequest, httpServletResponse);
-                return;
-            }
-
-            // 이 자리에 쿠키에서 가지온 값과 엑세스토큰을 비교하는 로직이 있어야 함
-
-            // 쿠키 JWT Token이 있다면 이 토큰으로 인증, 인가 진행
-            String jwtToken = jwtTokenCookie.getValue();
-            authorizationHeader = "Bearer " + jwtToken;
-            log.info("11111");
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+            return;
         }
 
         // Header의 Authorization 값이 'Bearer '로 시작하지 않으면 => 잘못된 형식의 토큰
@@ -90,6 +63,12 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 
         //추출한 loginId로 User 찾아오기
         User loginUser = userService.getLoginUserByLoginId(loginId);
+
+        // DB에 저장되어 있는 해당 사용자 토큰값과 현재 토큰값이 다르면 다음 필터 진행
+        if(!loginUser.getAccessToken().equals(token)){
+            filterChain.doFilter(httpServletRequest, httpServletResponse);
+            return;
+        }
         log.info("유저정보 : " + loginUser);
 
         // loginUser 정보로 UsernamePasswordAuthenticationToken 발급
