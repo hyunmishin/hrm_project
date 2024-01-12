@@ -4,18 +4,25 @@ import com.spring.hrm_project.domain.dto.LoginRequest;
 import com.spring.hrm_project.domain.entity.User;
 import com.spring.hrm_project.repository.UserRepository;
 import com.spring.hrm_project.utils.JwtTokenUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class UserService {
 
     private final UserRepository userRepository;
+
+
 
     /**
      * 로그인 기능
@@ -75,9 +82,28 @@ public class UserService {
     /**
      * 로그아웃 기능
      */
-    public void logout() {
-        // 로그인한 사용자 정보 가져와서 토큰 삭제 후 로그아웃 처리
-        
-    }
+    public void logout(HttpServletRequest httpServletRequest) {
 
+        // 로그인한 사용자 정보 가져와서 토큰 빈값 처리 후 로그아웃 처리
+        String jwtToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION).split(" ")[1];
+
+        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        Optional<User> optionalUser = userRepository.findByLoginId(loginId);
+
+        User user = optionalUser.get();
+
+        if(jwtToken.equals(optionalUser.get().getAccessToken())) {
+
+            user = User.builder()
+                    .accessToken("")
+                    .loginId(user.getLoginId())
+                    .password(user.getPassword())
+                    .nickname(user.getNickname())
+                    .userRole(user.getUserRole())
+                    .id(user.getId())
+                    .build();
+            userRepository.save(user);
+        }
+    }
 }

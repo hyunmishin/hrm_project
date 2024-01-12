@@ -31,7 +31,7 @@ public class LoginController {
     }
 
     @GetMapping("/info")
-    public ResponseEntity<String> userInfo() {
+    public ResponseEntity<String> userInfouserInfo() {
 
         User loginUser = userService.getLoginUserByLoginId(SecurityContextHolder.getContext().getAuthentication().getName());
 
@@ -40,17 +40,18 @@ public class LoginController {
 
     }
 
-    @GetMapping("admin")
+    @GetMapping("/admin")
     public ResponseEntity<String> adminPage() {
         return new ResponseEntity<>("관리자 페이지 접근 성공", HttpStatus.OK);
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(HttpServletRequest httpServletRequest) {
+    public ResponseEntity<String> logout(HttpServletRequest httpServletRequest) {
 
-        userService.logout();
+        userService.logout(httpServletRequest);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+
+        return new ResponseEntity<>("로그아웃 처리 되었습니다.", HttpStatus.OK);
 
     }
 

@@ -50,6 +50,7 @@ public class SecurityConfig {
                         authorize
                                 .requestMatchers("/jwt-login/info").authenticated()
                                 .requestMatchers("/jwt-login/login").permitAll()
+                                .requestMatchers("/jwt-login/logout").authenticated()
                                 .requestMatchers("/jwt-login/admin/**").hasAuthority(UserRole.ADMIN.name()))
                 .addFilterBefore(new JwtTokenFilter(userService, secretKey), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(authenticationManager -> authenticationManager
