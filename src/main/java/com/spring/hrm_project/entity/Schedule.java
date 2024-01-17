@@ -5,35 +5,35 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
 
-@Entity
+@Entity(name = "TB_SCHEDULE")
 @Data
 public class Schedule {
 
     @Id
-    String scheduleId;
+    private String scheduleId;
 
-    String scheduleStartDate;
+    private String scheduleStartDate;
 
-    String scheduleEndDate;
+    private String scheduleEndDate;
 
-    String scheduleCode;
+    private String scheduleCode;
 
-    String scheduleName;
+    private String scheduleName;
 
-    String scheduleDescription;
+    private String scheduleDescription;
 
-    String userId;
+    private String userId;
 
-    String privateYn;
+    private String privateYn;
 
-    String createId;
+    private String createId;
 
-    String createDate;
+    private String createDate;
 
-    String updateId;
+    private String updateId;
 
-    String updateDate;
+    private String updateDate;
 
-    String  useYn;
+    private String  useYn;
 
 }

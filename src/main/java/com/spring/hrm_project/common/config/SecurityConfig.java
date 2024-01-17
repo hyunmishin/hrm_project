@@ -4,6 +4,8 @@ import com.spring.hrm_project.domain.UserRole;
 import com.spring.hrm_project.jwt.JwtAccessDeniedHandler;
 import com.spring.hrm_project.jwt.JwtAuthenticationEntryPoint;
 import com.spring.hrm_project.jwt.JwtTokenFilter;
+import com.spring.hrm_project.model.SecurityRoleDto;
+import com.spring.hrm_project.repository.RoleCustomRepository;
 import com.spring.hrm_project.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +32,8 @@ public class SecurityConfig {
     private final UserService userService;
     private static String secretKey = "my-secret-key-123123";
 
+    private final RoleCustomRepository roleCustomRepository;
+
     @Bean
     public WebSecurityCustomizer webSecurityCustomizer() {
         // 허용되어야 할 경로들, 특히 정적파일들(필요한경우만 설정)
@@ -48,10 +52,13 @@ public class SecurityConfig {
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize ->
                         authorize
+                                .requestMatchers("/main").permitAll()
                                 .requestMatchers("/jwt-login/info").authenticated()
                                 .requestMatchers("/jwt-login/login").permitAll()
                                 .requestMatchers("/jwt-login/logout").authenticated()
                                 .requestMatchers("/jwt-login/admin/**").hasAuthority(UserRole.ADMIN.name()))
+                .authorizeHttpRequests(authorize ->
+                                roleCustomRepository.getSecurityRoleApi().forEach(role -> authorize.requestMatchers(role.getApiUrl()).hasAuthority(role.getRoleId())))
                 .addFilterBefore(new JwtTokenFilter(userService, secretKey), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(authenticationManager -> authenticationManager
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
