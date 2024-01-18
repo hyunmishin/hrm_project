@@ -1,6 +1,6 @@
 package com.spring.hrm_project.entity;
 
-import com.spring.hrm_project.entity.idClass.ApiRoleIdClass;
+import com.spring.hrm_project.entity.idClass.ApiRoleId;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -9,7 +9,7 @@ import lombok.Data;
 
 @Entity(name = "TB_API_ROLE")
 @Data
-@IdClass(ApiRoleIdClass.class)
+@IdClass(ApiRoleId.class)
 public class ApiRole {
     @Id
     @Column(name = "API_ID")

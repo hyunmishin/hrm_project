@@ -1,8 +1,7 @@
-package com.spring.hrm_project.model;
+package com.spring.hrm_project.model.security;
 
-import lombok.AllArgsConstructor;
+import com.spring.hrm_project.model.security.SecurityApiDto;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.util.List;
 

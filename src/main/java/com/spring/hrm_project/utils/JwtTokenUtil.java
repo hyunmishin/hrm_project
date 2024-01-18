@@ -9,11 +9,11 @@ import java.util.Date;
 public class JwtTokenUtil {
 
     // JWT 토큰 발급
-    public static String createToken(String loginId, String key, long expireTimeMs) {
+    public static String createToken(String userId, String key, long expireTimeMs) {
         // Claim = Jwt 토큰에 들어갈 정보
         // Claim에 loginId를 넣어줌으로써 나중에 loginId를 꺼내서 사용 가능
         Claims claims = Jwts.claims();
-        claims.put("loginId", loginId);
+        claims.put("userId", userId);
 
         return Jwts.builder() //토큰을 생성하기 위한 빌더 객체
                 .setClaims(claims) //앞서 생성한 클레임 객체를 토큰에 설정
@@ -24,8 +24,8 @@ public class JwtTokenUtil {
     }
 
     // Claims에서 loginId 추출
-    public static String getLoginId(String token, String secretKey) {
-        return extractClaims(token, secretKey).get("loginId").toString();
+    public static String getUserId(String token, String secretKey) {
+        return extractClaims(token, secretKey).get("userId").toString();
     }
 
     // 발급된 JWT 토큰의 만료 시간이 지났는지 체크

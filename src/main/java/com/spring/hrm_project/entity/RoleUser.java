@@ -1,6 +1,6 @@
 package com.spring.hrm_project.entity;
 
-import com.spring.hrm_project.entity.idClass.RoleUserIdClass;
+import com.spring.hrm_project.entity.idClass.RoleUserId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Entity(name = "TB_ROLE_USER")
 @Data
-@IdClass(RoleUserIdClass.class)
+@IdClass(RoleUserId.class)
 public class RoleUser {
 
     @Id

@@ -1,10 +1,8 @@
 package com.spring.hrm_project.common.config;
 
-import com.spring.hrm_project.domain.UserRole;
 import com.spring.hrm_project.jwt.JwtAccessDeniedHandler;
 import com.spring.hrm_project.jwt.JwtAuthenticationEntryPoint;
 import com.spring.hrm_project.jwt.JwtTokenFilter;
-import com.spring.hrm_project.model.SecurityRoleDto;
 import com.spring.hrm_project.repository.RoleCustomRepository;
 import com.spring.hrm_project.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -56,7 +54,7 @@ public class SecurityConfig {
                                 .requestMatchers("/jwt-login/info").authenticated()
                                 .requestMatchers("/jwt-login/login").permitAll()
                                 .requestMatchers("/jwt-login/logout").authenticated()
-                                .requestMatchers("/jwt-login/admin/**").hasAuthority(UserRole.ADMIN.name()))
+                                .requestMatchers("/jwt-login/admin/**").hasAuthority("ADMIN"))
                 .authorizeHttpRequests(authorize ->
                                 roleCustomRepository.getSecurityRoleApi().forEach(role -> authorize.requestMatchers(role.getApiUrl()).hasAuthority(role.getRoleId())))
                 .addFilterBefore(new JwtTokenFilter(userService, secretKey), UsernamePasswordAuthenticationFilter.class)

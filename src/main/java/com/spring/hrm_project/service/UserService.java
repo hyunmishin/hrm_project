@@ -1,8 +1,11 @@
 package com.spring.hrm_project.service;
 
-import com.spring.hrm_project.domain.dto.LoginRequest;
-import com.spring.hrm_project.domain.entity.User;
+import com.spring.hrm_project.entity.User;
+import com.spring.hrm_project.entity.UserToken;
+import com.spring.hrm_project.model.login.LoginRequest;
+import com.spring.hrm_project.model.login.LoginUserInfo;
 import com.spring.hrm_project.repository.UserRepository;
+import com.spring.hrm_project.repository.UserTokenRepository;
 import com.spring.hrm_project.utils.JwtTokenUtil;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -22,25 +25,25 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-
+    private final UserTokenRepository userTokenRepository;
 
     /**
      * 로그인 기능
      * 화면에서 LoginRequest(loginId, password)를 입력받아 loginId와 password가 일치하면 User return
      * loginId가 존재하지 않거나 password가 일치하지 않으면 null return
      */
-    public User login(LoginRequest loginRequest) {
-        Optional<User> optionalUser = userRepository.findByLoginId(loginRequest.getLoginId());
+    public LoginUserInfo login(LoginRequest loginRequest) {
+        Optional<User> optionalUser = userRepository.findByUserId(loginRequest.getUserId());
 
         // 로그인아이디와 일치하는 유저가 없으면 널값 리턴
         if(optionalUser.isEmpty()) {
             return null;
         }
 
-        User user = optionalUser.get();
+        User userInfo = optionalUser.get();
 
         // 찾아온 유저의 패스워드와 입력된 패스워드가 다르면 널값 리턴
-        if(!user.getPassword().equals(loginRequest.getPassword())) {
+        if(!userInfo.getUserPassword().equals(loginRequest.getUserPassword())) {
             return null;
         }
 
@@ -48,19 +51,25 @@ public class UserService {
         String secretKey = "my-secret-key-123123";
         long expireTimeMs = 1000 * 60 * 60;     // Token 유효 시간 = 60분
 
-        String jwtToken = JwtTokenUtil.createToken(user.getLoginId(), secretKey, expireTimeMs);
+        String jwtToken = JwtTokenUtil.createToken(userInfo.getUserId(), secretKey, expireTimeMs);
 
-        user = User.builder()
-                .accessToken(jwtToken)
-                .loginId(user.getLoginId())
-                .password(user.getPassword())
-                .nickname(user.getNickname())
-                .userRole(user.getUserRole())
-                .id(user.getId())
+        UserToken userToken = UserToken.builder()
+                .userId(userInfo.getUserId())
+                .userAccessToken(jwtToken)
+                .userRefreshToken(jwtToken)
                 .build();
-        userRepository.save(user);
+        userTokenRepository.save(userToken);
 
-        return user;
+        userInfo = User.builder()
+                .userId(userInfo.getUserId())
+                .userPassword(userInfo.getUserPassword())
+                .userName(userInfo.getUserName())
+                .build();
+        userRepository.save(userInfo);
+
+        return LoginUserInfo.builder()
+                .jwtToken(jwtToken)
+                .data(userInfo).build();
     }
 
     /**
@@ -69,15 +78,13 @@ public class UserService {
      * loginId가 null이거나(로그인 X) userId로 찾아온 User가 없으면 null return
      * loginId로 찾아온 User가 존재하면 User return
      */
-    public User getLoginUserByLoginId(String loginId) {
-        if(loginId == null) return null;
+    public User getUserInfoByUserId(String userId) {
+        if(userId == null) return null;
 
-        Optional<User> optionalUser = userRepository.findByLoginId(loginId);
-        if(optionalUser.isEmpty()) return null;
+        Optional<User> optionalUser = userRepository.findByUserId(userId);
+        return optionalUser.orElse(null);
 
-        return optionalUser.get();
     }
-
 
     /**
      * 로그아웃 기능
@@ -87,23 +94,26 @@ public class UserService {
         // 로그인한 사용자 정보 가져와서 토큰 빈값 처리 후 로그아웃 처리
         String jwtToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION).split(" ")[1];
 
-        String loginId = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        Optional<User> optionalUser = userRepository.findByLoginId(loginId);
+        Optional<User> optionalUser = userRepository.findByUserId(userId);
 
-        User user = optionalUser.get();
+        User userInfo = optionalUser.get();
 
-        if(jwtToken.equals(optionalUser.get().getAccessToken())) {
+//        if(jwtToken.equals(optionalUser.get().getAccessToken())) {
+//
+//            UserToken userToken = UserToken.builder()
+//                    .userAccessToken("")
+//                    .userId(userInfo.getUserId())
+//                    .build();
+//            userTokenRepository.save(userToken);
+//        }
+    }
 
-            user = User.builder()
-                    .accessToken("")
-                    .loginId(user.getLoginId())
-                    .password(user.getPassword())
-                    .nickname(user.getNickname())
-                    .userRole(user.getUserRole())
-                    .id(user.getId())
-                    .build();
-            userRepository.save(user);
-        }
+    public UserToken getUserTokenInfo(String userId) {
+
+        Optional<UserToken> optionalUserToken = userTokenRepository.findByUserId(userId);
+
+        return optionalUserToken.orElse(null);
     }
 }

@@ -5,9 +5,12 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class RoleUserIdClass implements Serializable {
-
-    private String roleId;
+public class UserTokenId implements Serializable {
 
     private String userId;
+
+    private String userAccessToken;
+
+    private String userRefreshToken;
+
 }

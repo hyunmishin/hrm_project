@@ -1,7 +1,6 @@
 package com.spring.hrm_project.controller;
 
-import com.spring.hrm_project.model.SecurityRoleApi;
-import com.spring.hrm_project.model.SecurityRoleDto;
+import com.spring.hrm_project.model.security.SecurityRoleApi;
 import com.spring.hrm_project.repository.RoleCustomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

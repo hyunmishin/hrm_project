@@ -1,7 +1,8 @@
 package com.spring.hrm_project.controller;
 
-import com.spring.hrm_project.domain.dto.LoginRequest;
-import com.spring.hrm_project.domain.entity.User;
+import com.spring.hrm_project.entity.User;
+import com.spring.hrm_project.model.login.LoginRequest;
+import com.spring.hrm_project.model.login.LoginUserInfo;
 import com.spring.hrm_project.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -16,27 +17,28 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/jwt-login")
 public class LoginController {
+
     private final UserService userService;
 
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginUserInfo> login(@RequestBody LoginRequest loginRequest) {
 
-        User user = userService.login(loginRequest);
+        LoginUserInfo loginUserInfo = userService.login(loginRequest);
 
-        if(user == null) {
-            return new ResponseEntity<>("아이디 또는 비밀번호가 맞지 않습니다.", HttpStatus.UNAUTHORIZED);
+        if(loginUserInfo == null) {
+            return new ResponseEntity<>(LoginUserInfo.builder().desc("아이디 또는 비밀번호가 맞지 않습니다.").build(), HttpStatus.UNAUTHORIZED);
         }
 
-        return new ResponseEntity<>(user.getAccessToken(), HttpStatus.OK);
+        return new ResponseEntity<>(loginUserInfo, HttpStatus.OK);
     }
 
     @GetMapping("/info")
-    public ResponseEntity<String> userInfouserInfo() {
+    public ResponseEntity<String> userInfo() {
 
-        User loginUser = userService.getLoginUserByLoginId(SecurityContextHolder.getContext().getAuthentication().getName());
+        User userInfo = userService.getUserInfoByUserId(SecurityContextHolder.getContext().getAuthentication().getName());
 
-        return new ResponseEntity<>(String.format("loginId : %s\nnickname : %s\nrole : %s",
-                loginUser.getLoginId(), loginUser.getNickname(), loginUser.getUserRole()), HttpStatus.OK);
+        return new ResponseEntity<>(String.format("userId : %s\nuserName : %s\nuserRole : %s",
+                userInfo.getUserId(), userInfo.getUserName()), HttpStatus.OK);
 
     }
 
@@ -49,7 +51,6 @@ public class LoginController {
     public ResponseEntity<String> logout(HttpServletRequest httpServletRequest) {
 
         userService.logout(httpServletRequest);
-
 
         return new ResponseEntity<>("로그아웃 처리 되었습니다.", HttpStatus.OK);
 

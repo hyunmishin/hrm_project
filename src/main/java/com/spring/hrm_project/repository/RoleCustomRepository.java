@@ -3,9 +3,9 @@ package com.spring.hrm_project.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.spring.hrm_project.model.SecurityApiDto;
-import com.spring.hrm_project.model.SecurityRoleApi;
-import com.spring.hrm_project.model.SecurityRoleDto;
+import com.spring.hrm_project.model.security.SecurityApiDto;
+import com.spring.hrm_project.model.security.SecurityRoleApi;
+import com.spring.hrm_project.model.security.SecurityRoleDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 

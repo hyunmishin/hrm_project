@@ -1,6 +1,7 @@
 package com.spring.hrm_project.jwt;
 
-import com.spring.hrm_project.domain.entity.User;
+import com.spring.hrm_project.entity.User;
+import com.spring.hrm_project.entity.UserToken;
 import com.spring.hrm_project.service.UserService;
 import com.spring.hrm_project.utils.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
@@ -24,6 +25,7 @@ import java.util.List;
 public class JwtTokenFilter extends OncePerRequestFilter {
 
     private final UserService userService;
+
     private final String secretKey;
 
     @Override
@@ -58,22 +60,24 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         }
 
         // Jwt Token에서 loginId 추출
-        String loginId = JwtTokenUtil.getLoginId(token, secretKey);
-        log.info("로그인아이디 : " + loginId);
+        String userId = JwtTokenUtil.getUserId(token, secretKey);
+        log.info("유저아이디 : " + userId);
 
         //추출한 loginId로 User 찾아오기
-        User loginUser = userService.getLoginUserByLoginId(loginId);
+        User userInfo = userService.getUserInfoByUserId(userId);
+
+        UserToken userToken = userService.getUserTokenInfo(userId);
 
         // DB에 저장되어 있는 해당 사용자 토큰값과 현재 토큰값이 다르면 다음 필터 진행
-        if(!loginUser.getAccessToken().equals(token)){
+        if(!userToken.getUserAccessToken().equals(token)){
             filterChain.doFilter(httpServletRequest, httpServletResponse);
             return;
         }
-        log.info("유저정보 : " + loginUser);
+        log.info("유저정보 : " + userInfo);
 
         // loginUser 정보로 UsernamePasswordAuthenticationToken 발급
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                loginUser.getLoginId(), null, List.of(new SimpleGrantedAuthority(loginUser.getUserRole())));
+                userInfo.getUserId(), null, List.of(new SimpleGrantedAuthority("ADMIN")));
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
 
         // 권한 부여

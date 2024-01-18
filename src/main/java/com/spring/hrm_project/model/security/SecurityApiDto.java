@@ -1,4 +1,4 @@
-package com.spring.hrm_project.model;
+package com.spring.hrm_project.model.security;
 
 import lombok.Data;
 
