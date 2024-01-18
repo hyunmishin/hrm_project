@@ -6,7 +6,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import lombok.Data;
 
-@Entity(name = "TB_ROLE_USER")
+@Entity
 @Data
 @IdClass(RoleUserId.class)
 public class RoleUser {

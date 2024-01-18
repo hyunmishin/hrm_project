@@ -7,15 +7,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import lombok.Data;
 
-@Entity(name = "TB_API_ROLE")
+@Entity
 @Data
 @IdClass(ApiRoleId.class)
 public class ApiRole {
     @Id
-    @Column(name = "API_ID")
     private String apiId;
     @Id
-    @Column(name = "ROLE_ID")
     private String roleId;
 
     private String createId;

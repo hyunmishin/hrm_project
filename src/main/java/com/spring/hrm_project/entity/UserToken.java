@@ -10,7 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity(name = "TB_USER_TOKEN")
+@Entity
 @Data
 @Builder
 @NoArgsConstructor
@@ -19,30 +19,22 @@ import lombok.NoArgsConstructor;
 public class UserToken {
 
     @Id
-    @Column(name = "USER_ID")
     private String userId;
 
     @Id
-    @Column(name = "USER_ACCESS_TOKEN")
     private String userAccessToken;
 
     @Id
-    @Column(name = "USER_REFRESH_TOKEN")
     private String userRefreshToken;
 
-    @Column(name = "CREATE_ID")
     private String createId;
 
-    @Column(name = "CREATE_DATE")
     private String createDate;
 
-    @Column(name = "UPDATE_ID")
     private String updateId;
 
-    @Column(name = "UPDATE_DATE")
     private String updateDate;
 
-    @Column(name = "USE_YN")
     private String useYn;
 
 }

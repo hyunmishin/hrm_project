@@ -5,12 +5,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
 
-@Entity(name = "TB_ROLE")
+@Entity
 @Data
 public class Role {
 
     @Id
-    @Column(name = "ROLE_ID")
     private String roleId;
 
     private String roleName;

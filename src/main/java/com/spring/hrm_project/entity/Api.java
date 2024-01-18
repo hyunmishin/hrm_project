@@ -5,16 +5,14 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
 
-@Entity(name = "TB_API")
+@Entity
 @Data
 public class Api {
     @Id
-    @Column(name = "API_ID")
     private String apiId;
 
     private String apiName;
 
-    @Column(name = "API_URL")
     private String apiUrl;
 
     private String apiType;

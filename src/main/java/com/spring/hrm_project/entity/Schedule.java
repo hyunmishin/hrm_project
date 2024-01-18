@@ -5,7 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import lombok.Data;
 
-@Entity(name = "TB_SCHEDULE")
+@Entity
 @Data
 public class Schedule {
 
