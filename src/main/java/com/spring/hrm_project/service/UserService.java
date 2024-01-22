@@ -3,6 +3,7 @@ package com.spring.hrm_project.service;
 import com.spring.hrm_project.entity.User;
 import com.spring.hrm_project.entity.UserToken;
 import com.spring.hrm_project.model.login.LoginRequest;
+import com.spring.hrm_project.model.login.LoginResponse;
 import com.spring.hrm_project.model.login.LoginUserInfo;
 import com.spring.hrm_project.repository.UserRepository;
 import com.spring.hrm_project.repository.UserTokenRepository;
@@ -29,10 +30,9 @@ public class UserService {
 
     /**
      * 로그인 기능
-     * 화면에서 LoginRequest(loginId, password)를 입력받아 loginId와 password가 일치하면 User return
-     * loginId가 존재하지 않거나 password가 일치하지 않으면 null return
      */
     public LoginUserInfo login(LoginRequest loginRequest) {
+
         Optional<User> optionalUser = userRepository.findByUserId(loginRequest.getUserId());
 
         // 로그인아이디와 일치하는 유저가 없으면 널값 리턴
@@ -53,19 +53,21 @@ public class UserService {
 
         String jwtToken = JwtTokenUtil.createToken(userInfo.getUserId(), secretKey, expireTimeMs);
 
+        Optional<UserToken> optionalUserToken = userTokenRepository.findByUserIdAndUseYn(userInfo.getUserId(), "Y");
+
+        if(optionalUserToken.isPresent()) {
+            optionalUserToken.get().setUseYn("N");
+            log.info("업데이트 완료");
+        }
+
         UserToken userToken = UserToken.builder()
                 .userId(userInfo.getUserId())
                 .userAccessToken(jwtToken)
                 .userRefreshToken(jwtToken)
+                .useYn("Y")
                 .build();
         userTokenRepository.save(userToken);
-
-        userInfo = User.builder()
-                .userId(userInfo.getUserId())
-                .userPassword(userInfo.getUserPassword())
-                .userName(userInfo.getUserName())
-                .build();
-        userRepository.save(userInfo);
+        log.info("저장 완료");
 
         return LoginUserInfo.builder()
                 .jwtToken(jwtToken)
@@ -73,16 +75,22 @@ public class UserService {
     }
 
     /**
-     * loginId(String)를 입력받아 User을 return 해주는 기능
      * 인증, 인가 시 사용
-     * loginId가 null이거나(로그인 X) userId로 찾아온 User가 없으면 null return
-     * loginId로 찾아온 User가 존재하면 User return
      */
-    public User getUserInfoByUserId(String userId) {
-        if(userId == null) return null;
+    public LoginResponse getUserInfoByUserId(String userId) {
+
+        if(userId == null) {
+            return null;
+        }
 
         Optional<User> optionalUser = userRepository.findByUserId(userId);
-        return optionalUser.orElse(null);
+
+        return LoginResponse.builder()
+                .userId(userId)
+                .userName(optionalUser.get().getUserName())
+                .orgId(optionalUser.get().getOrgId())
+                .userPositionCode(optionalUser.get().getUserPositionCode())
+                .build();
 
     }
 
@@ -112,7 +120,7 @@ public class UserService {
 
     public UserToken getUserTokenInfo(String userId) {
 
-        Optional<UserToken> optionalUserToken = userTokenRepository.findByUserId(userId);
+        Optional<UserToken> optionalUserToken = userTokenRepository.findByUserIdAndUseYn(userId, "Y");
 
         return optionalUserToken.orElse(null);
     }

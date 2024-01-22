@@ -22,7 +22,7 @@ public class MainController {
     @GetMapping()
     public ResponseEntity<List<SecurityRoleApi>> getMainList(){
         List<SecurityRoleApi> result = roleCustomRepository.getSecurityRoleApi();
-        return new ResponseEntity<>(result,HttpStatus.OK);
+        return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
 }

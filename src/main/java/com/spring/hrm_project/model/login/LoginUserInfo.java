@@ -12,5 +12,4 @@ public class LoginUserInfo {
 
     private String jwtToken;
 
-    private String desc;
 }

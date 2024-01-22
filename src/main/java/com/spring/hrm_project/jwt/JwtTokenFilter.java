@@ -1,7 +1,8 @@
 package com.spring.hrm_project.jwt;
 
-import com.spring.hrm_project.entity.User;
 import com.spring.hrm_project.entity.UserToken;
+import com.spring.hrm_project.model.login.LoginResponse;
+import com.spring.hrm_project.repository.RoleCustomRepository;
 import com.spring.hrm_project.service.UserService;
 import com.spring.hrm_project.utils.JwtTokenUtil;
 import jakarta.servlet.FilterChain;
@@ -12,13 +13,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -27,6 +30,8 @@ public class JwtTokenFilter extends OncePerRequestFilter {
     private final UserService userService;
 
     private final String secretKey;
+
+    private final RoleCustomRepository roleCustomRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse,
@@ -64,7 +69,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         log.info("유저아이디 : " + userId);
 
         //추출한 loginId로 User 찾아오기
-        User userInfo = userService.getUserInfoByUserId(userId);
+        LoginResponse userInfo = userService.getUserInfoByUserId(userId);
 
         UserToken userToken = userService.getUserTokenInfo(userId);
 
@@ -73,12 +78,22 @@ public class JwtTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(httpServletRequest, httpServletResponse);
             return;
         }
+
         log.info("유저정보 : " + userInfo);
+
+        Collection<? extends GrantedAuthority> roles = roleCustomRepository.getUserRole(userId)
+                                                                            .stream()
+                                                                            .map(SimpleGrantedAuthority::new)
+                                                                            .collect(Collectors.toList());
+
+        log.info("유저권한 : " + roles.toString());
 
         // loginUser 정보로 UsernamePasswordAuthenticationToken 발급
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                userInfo.getUserId(), null, List.of(new SimpleGrantedAuthority("ADMIN")));
+                userInfo.getUserId(), null, roles);
         authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(httpServletRequest));
+
+        log.info("유저토큰값 : " + authenticationToken);
 
         // 권한 부여
         SecurityContextHolder.getContext().setAuthentication(authenticationToken);

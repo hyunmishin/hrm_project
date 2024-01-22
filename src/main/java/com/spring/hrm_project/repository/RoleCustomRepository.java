@@ -16,6 +16,7 @@ import static com.querydsl.core.group.GroupBy.list;
 import static com.spring.hrm_project.entity.QApi.api;
 import static com.spring.hrm_project.entity.QApiRole.apiRole;
 import static com.spring.hrm_project.entity.QRole.role;
+import static com.spring.hrm_project.entity.QRoleUser.roleUser;
 
 @Repository
 @RequiredArgsConstructor
@@ -51,8 +52,16 @@ public class RoleCustomRepository {
                         role.roleId
                         ,api.apiUrl
                 )).from(role)
-                .leftJoin(apiRole).on(role.roleId.eq(apiRole.roleId))
-                .leftJoin(api).on(api.apiId.eq(apiRole.apiId))
+                .innerJoin(apiRole).on(role.roleId.eq(apiRole.roleId))
+                .innerJoin(api).on(api.apiId.eq(apiRole.apiId))
+                .fetch();
+    }
+
+    public List<String> getUserRole(String userId) {
+        return jpaQueryFactory
+                .select(roleUser.roleId)
+                .from(roleUser)
+                .where(roleUser.userId.eq(userId))
                 .fetch();
     }
 

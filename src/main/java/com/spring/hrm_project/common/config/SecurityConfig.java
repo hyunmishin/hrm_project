@@ -51,13 +51,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize ->
                         authorize
                                 .requestMatchers("/main").permitAll()
-                                .requestMatchers("/jwt-login/info").authenticated()
-                                .requestMatchers("/jwt-login/login").permitAll()
-                                .requestMatchers("/jwt-login/logout").authenticated()
-                                .requestMatchers("/jwt-login/admin/**").hasAuthority("ADMIN"))
+                                .requestMatchers("/jwt-login/login").permitAll())
                 .authorizeHttpRequests(authorize ->
                                 roleCustomRepository.getSecurityRoleApi().forEach(role -> authorize.requestMatchers(role.getApiUrl()).hasAuthority(role.getRoleId())))
-                .addFilterBefore(new JwtTokenFilter(userService, secretKey), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JwtTokenFilter(userService, secretKey, roleCustomRepository), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(authenticationManager -> authenticationManager
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(jwtAccessDeniedHandler));
