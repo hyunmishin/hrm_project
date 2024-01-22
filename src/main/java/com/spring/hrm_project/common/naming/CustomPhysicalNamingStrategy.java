@@ -15,7 +15,7 @@ public class CustomPhysicalNamingStrategy extends PhysicalNamingStrategyStandard
             return null;
         }
 
-        final String newName = TABLE_PREFIX + convertToSnakeCase(identifier).getText().toUpperCase();
+        final String newName = TABLE_PREFIX + convertToSnakeCase(identifier).getText();
         return Identifier.toIdentifier(newName);
     }
 
