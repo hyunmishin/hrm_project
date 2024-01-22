@@ -3,6 +3,7 @@ package com.spring.hrm_project.repository;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.spring.hrm_project.model.security.SecurityApi;
 import com.spring.hrm_project.model.security.SecurityApiDto;
 import com.spring.hrm_project.model.security.SecurityRoleApi;
 import com.spring.hrm_project.model.security.SecurityRoleDto;
@@ -55,6 +56,22 @@ public class RoleCustomRepository {
                 .innerJoin(apiRole).on(role.roleId.eq(apiRole.roleId))
                 .innerJoin(api).on(api.apiId.eq(apiRole.apiId))
                 .fetch();
+    }
+
+    public List<SecurityApi> getSecurityApi(){
+        return jpaQueryFactory
+                .from(api)
+                .innerJoin(apiRole).on(apiRole.apiId.eq(api.apiId))
+                .innerJoin(role).on(role.roleId.eq(apiRole.roleId))
+                .transform(
+                        groupBy(api.apiUrl).list(
+                                Projections.fields(
+                                        SecurityApi.class,
+                                        api.apiUrl,
+                                        list(role.roleId).as("roleList")
+                                )
+                        )
+                );
     }
 
     public List<String> getUserRole(String userId) {

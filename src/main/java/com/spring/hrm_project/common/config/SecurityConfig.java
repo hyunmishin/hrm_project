@@ -53,7 +53,7 @@ public class SecurityConfig {
                                 .requestMatchers("/main").permitAll()
                                 .requestMatchers("/jwt-login/login").permitAll())
                 .authorizeHttpRequests(authorize ->
-                                roleCustomRepository.getSecurityRoleApi().forEach(role -> authorize.requestMatchers(role.getApiUrl()).hasAuthority(role.getRoleId())))
+                                roleCustomRepository.getSecurityApi().forEach(t -> authorize.requestMatchers(t.getApiUrl()).hasAnyAuthority(t.getRoleList().toArray(new String[0]))))
                 .addFilterBefore(new JwtTokenFilter(userService, secretKey, roleCustomRepository), UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(authenticationManager -> authenticationManager
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
