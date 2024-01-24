@@ -63,6 +63,7 @@ public class RoleCustomRepository {
                 .from(api)
                 .innerJoin(apiRole).on(apiRole.apiId.eq(api.apiId))
                 .innerJoin(role).on(role.roleId.eq(apiRole.roleId))
+                .orderBy(api.apiUrl.asc())
                 .transform(
                         groupBy(api.apiUrl).list(
                                 Projections.fields(
@@ -73,6 +74,7 @@ public class RoleCustomRepository {
                         )
                 );
     }
+
 
     public List<String> getUserRole(String userId) {
         return jpaQueryFactory
