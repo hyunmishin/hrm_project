@@ -16,7 +16,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
+
+import static com.spring.hrm_project.utils.DateUtil.getCurrentDate;
 
 @Slf4j
 @Service
@@ -27,6 +30,12 @@ public class UserService {
     private final UserRepository userRepository;
 
     private final UserTokenRepository userTokenRepository;
+
+    public static final String SECRET_KEY = "my-secret-key-123123";
+    public static final long EXPIRE_TIME_MS = 1000 * 60 * 60;       // Token 유효 시간 = 60분
+
+    // 현재 날짜
+    LocalDateTime currentDate = getCurrentDate();
 
     /**
      * 로그인 기능
@@ -48,15 +57,13 @@ public class UserService {
         }
 
         // 로그인 성공 => Jwt Token 발급
-        String secretKey = "my-secret-key-123123";
-        long expireTimeMs = 1000 * 60 * 60;     // Token 유효 시간 = 60분
-
-        String jwtToken = JwtTokenUtil.createToken(userInfo.getUserId(), secretKey, expireTimeMs);
+        String jwtToken = JwtTokenUtil.createToken(userInfo.getUserId(), SECRET_KEY, EXPIRE_TIME_MS);
 
         Optional<UserToken> optionalUserToken = userTokenRepository.findByUserIdAndUseYn(userInfo.getUserId(), "Y");
 
         if(optionalUserToken.isPresent()) {
             optionalUserToken.get().setUseYn("N");
+            optionalUserToken.get().setUpdateDate(currentDate.toString());
             log.info("업데이트 완료");
         }
 
@@ -64,6 +71,7 @@ public class UserService {
                 .userId(userInfo.getUserId())
                 .userAccessToken(jwtToken)
                 .userRefreshToken(jwtToken)
+                .createDate(currentDate.toString())
                 .useYn("Y")
                 .build();
         userTokenRepository.save(userToken);
@@ -99,23 +107,19 @@ public class UserService {
      */
     public void logout(HttpServletRequest httpServletRequest) {
 
-        // 로그인한 사용자 정보 가져와서 토큰 빈값 처리 후 로그아웃 처리
+        // 로그인한 사용자 정보 가져와서 토큰 사용여부 "N"으로 업데이트 후 로그아웃 처리
         String jwtToken = httpServletRequest.getHeader(HttpHeaders.AUTHORIZATION).split(" ")[1];
 
         String userId = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        Optional<User> optionalUser = userRepository.findByUserId(userId);
+        Optional<UserToken> optionalUserToken = userTokenRepository.findByUserIdAndUseYn(userId, "Y");
 
-        User userInfo = optionalUser.get();
-
-//        if(jwtToken.equals(optionalUser.get().getAccessToken())) {
-//
-//            UserToken userToken = UserToken.builder()
-//                    .userAccessToken("")
-//                    .userId(userInfo.getUserId())
-//                    .build();
-//            userTokenRepository.save(userToken);
-//        }
+        if(optionalUserToken.isPresent()) {
+            if(jwtToken.equals(optionalUserToken.get().getUserAccessToken())) {
+                optionalUserToken.get().setUseYn("N");
+                optionalUserToken.get().setUpdateDate(currentDate.toString());
+            }
+        }
     }
 
     public UserToken getUserTokenInfo(String userId) {

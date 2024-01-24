@@ -21,7 +21,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -84,7 +83,14 @@ public class JwtTokenFilter extends OncePerRequestFilter {
         Collection<? extends GrantedAuthority> roles = roleCustomRepository.getUserRole(userId)
                                                                             .stream()
                                                                             .map(SimpleGrantedAuthority::new)
-                                                                            .collect(Collectors.toList());
+                                                                            .toList();
+
+//        Collection<SimpleGrantedAuthority> test = new ArrayList<>() ;
+//        List<String> result = roleCustomRepository.getUserRole(userId);
+//        for(String s : result){
+//            SimpleGrantedAuthority tmp = new SimpleGrantedAuthority(s);
+//            test.add(tmp);
+//        }
 
         log.info("유저권한 : " + roles.toString());
 
